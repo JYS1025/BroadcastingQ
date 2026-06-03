@@ -1,0 +1,55 @@
+seed: 0
+
+application:
+  name: lunar_lander
+  entrypoint: applications.lunar_lander.env:LunarLanderEnv
+  visualizer: applications.lunar_lander.visualize:LunarLanderVisualizer
+
+env:
+  gym_env_id: LunarLander-v3
+  continuous: false
+  gravity: -10.0
+  enable_wind: false
+  wind_power: 15.0
+  turbulence_power: 1.5
+
+observation:
+  type: multidiscrete_binned_continuous
+  continuous_bin_counts: [7, 7, 7, 7, 9, 7]
+
+agent:
+  name: dqn
+  device: auto
+  gamma: 0.99
+  learning_rate: 0.0005
+  batch_size: 64
+  replay_size: 100000
+  warmup_steps: 5000
+  target_update_interval: 1000
+  hidden_sizes: [256, 256]
+  epsilon:
+    type: linear
+    start: 1.0
+    end: 0.05
+    decay_steps: 250000
+
+training:
+  total_steps: 500000
+  eval_interval: 20000
+  eval_episodes: 20
+  log_interval: 2000
+  save_interval: 100000
+  progress_bar: true
+
+visualization:
+  enabled: true
+  interval: 20000
+  episodes: 1
+  format: gif
+  fps: 30
+  max_steps: 1000
+
+logging:
+  output_root: outputs
+  run_name: lunar_lander_dqn_naive_bins_seed0
+  save_csv: true
