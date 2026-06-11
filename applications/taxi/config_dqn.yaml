@@ -1,17 +1,17 @@
-seed: 0
+seed: 1
 
 application:
-  name: acrobot
-  entrypoint: applications.acrobot.env:AcrobotEnv
-  visualizer: applications.acrobot.visualize:AcrobotVisualizer
+  name: taxi
+  entrypoint: applications.taxi.env:TaxiEnv
+  visualizer: applications.taxi.visualize:TaxiVisualizer
 
 env:
-  gym_env_id: Acrobot-v1
-  book_or_nips: null
+  gym_env_id: Taxi-v4
+  render_mode: ansi
+  kwargs: {}
 
 observation:
-  type: theta_binned
-  theta_bin_counts: [16,16,16,16]
+  type: decoded_taxi
 
 agent:
   name: dqn
@@ -19,34 +19,34 @@ agent:
   gamma: 0.99
   learning_rate: 0.0005
   batch_size: 64
-  replay_size: 100000
+  replay_size: 50000
   warmup_steps: 1000
   target_update_interval: 1000
-  hidden_sizes: [128, 128]
+  hidden_sizes: [64, 64]
   epsilon:
     type: linear
     start: 1.0
     end: 0.05
-    decay_steps: 100000
+    decay_steps: 20000
 
 training:
-  total_steps: 500000
+  total_steps: 200000
   eval_interval: 10000
-  eval_episodes: 200
+  eval_episodes: 500
+  eval_seed: 1
   log_interval: 1000
   save_interval: 50000
   progress_bar: true
-  eval_seed: 10000
 
 visualization:
   enabled: true
   interval: 10000
   episodes: 1
   format: gif
-  fps: 30
-  max_steps: 500
+  fps: 4
+  max_steps: 201
 
 logging:
   output_root: outputs
-  run_name: acrobot_dqn_theta_seed0
+  run_name: taxi_dqn_seed0
   save_csv: true
