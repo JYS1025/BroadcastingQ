@@ -17,22 +17,26 @@ from core.spaces import DiscreteActionSpace, MultiDiscreteSpace
 
 
 class AcrobotEnv(BaseEnv):
-    """Gymnasium Acrobot-v1 wrapper with a naively discretized observation.
+    """Gymnasium Acrobot-v1 wrapper with configurable factored observations.
 
     BroadcastingQ's existing agents require a finite factored observation
     represented by ``MultiDiscreteSpace`` and a finite discrete action space.
-    Acrobot already exposes three discrete torque actions, but its observation
-    is a continuous six-vector. This wrapper independently bins those six raw
-    coordinates and deliberately leaves all state-similarity behavior to the
-    existing agents. Generic SBQ therefore uses its existing Hamming distance
-    over these bins; no angle-aware or ordinal distance is introduced here.
+    This wrapper changes only the application-level representation. It does not
+    add an Acrobot-specific distance function; generic SBQ still sees only
+    ``MultiDiscreteSpace`` factors and its existing Hamming distance.
     """
 
-    FEATURE_NAMES = [
+    RAW_FEATURE_NAMES = [
         "cos_theta1",
         "sin_theta1",
         "cos_theta2",
         "sin_theta2",
+        "angular_velocity_theta1",
+        "angular_velocity_theta2",
+    ]
+    THETA_FEATURE_NAMES = [
+        "theta1",
+        "theta2",
         "angular_velocity_theta1",
         "angular_velocity_theta2",
     ]
@@ -82,6 +86,10 @@ class AcrobotEnv(BaseEnv):
         if not np.all(raw_high > raw_low):
             raise ValueError("Every Acrobot observation upper bound must exceed its lower bound")
 
+        self.observation_type = str(
+            observation_config.get("type", "multidiscrete_binned_continuous")
+        )
+
         bin_counts = observation_config.get("bin_counts", [7, 7, 7, 7, 9, 9])
         self.bin_counts = [int(value) for value in bin_counts]
         if len(self.bin_counts) != 6:
@@ -97,7 +105,39 @@ class AcrobotEnv(BaseEnv):
 
         self.raw_low = raw_low
         self.raw_high = raw_high
-        self.observation_space = MultiDiscreteSpace(self.bin_counts)
+        self.theta_low = np.array(
+            [-np.pi, -np.pi, raw_low[4], raw_low[5]],
+            dtype=np.float64,
+        )
+        self.theta_high = np.array(
+            [np.pi, np.pi, raw_high[4], raw_high[5]],
+            dtype=np.float64,
+        )
+        self.theta_bin_counts: list[int] = []
+
+        if self.observation_type == "multidiscrete_binned_continuous":
+            self.feature_names = list(self.RAW_FEATURE_NAMES)
+            self.observation_space = MultiDiscreteSpace(self.bin_counts)
+        elif self.observation_type == "theta_binned":
+            theta_bin_counts = observation_config.get("theta_bin_counts", [31, 31, 15, 19])
+            self.theta_bin_counts = [int(value) for value in theta_bin_counts]
+            if len(self.theta_bin_counts) != 4:
+                raise ValueError(
+                    "observation.theta_bin_counts must specify four values for "
+                    f"[theta1, theta2, dtheta1, dtheta2]; received {self.theta_bin_counts!r}"
+                )
+            if any(value < 2 for value in self.theta_bin_counts):
+                raise ValueError("Every Acrobot theta bin count must be at least 2")
+        else:
+            raise ValueError(
+                "Unsupported Acrobot observation.type "
+                f"{self.observation_type!r}. Expected one of "
+                "'multidiscrete_binned_continuous' or 'theta_binned'."
+            )
+
+        if self.observation_type == "theta_binned":
+            self.feature_names = list(self.THETA_FEATURE_NAMES)
+            self.observation_space = MultiDiscreteSpace(self.theta_bin_counts)
 
         self.episode_return = 0.0
         self.episode_steps = 0
@@ -163,33 +203,51 @@ class AcrobotEnv(BaseEnv):
         self.env.close()
 
     def _bin_observation(self, raw_obs: np.ndarray) -> np.ndarray:
-        """Uniformly quantize all six continuous raw observation coordinates.
-
-        Coordinate i with range [low_i, high_i] and B_i bins is mapped by
-
-            floor(B_i * (clip(x_i) - low_i) / (high_i - low_i)),
-
-        followed by clipping into [0, B_i - 1]. The final clip handles values
-        equal to the upper bound exactly.
-        """
+        """Convert raw Acrobot observations into the configured finite factors."""
         raw = np.asarray(raw_obs, dtype=np.float64)
         if raw.shape != (6,):
             raise ValueError(f"Expected raw Acrobot observation shape (6,), received {raw.shape}")
         if not np.all(np.isfinite(raw)):
             raise ValueError(f"Acrobot produced a non-finite observation: {raw!r}")
 
-        clipped = np.clip(raw, self.raw_low, self.raw_high)
-        normalized = (clipped - self.raw_low) / (self.raw_high - self.raw_low)
-        bin_counts = np.asarray(self.bin_counts, dtype=np.int64)
-        binned = np.floor(normalized * bin_counts).astype(np.int64)
-        binned = np.clip(binned, 0, bin_counts - 1)
+        if self.observation_type == "multidiscrete_binned_continuous":
+            obs = self._uniform_bin(raw, self.raw_low, self.raw_high, self.bin_counts)
+        elif self.observation_type == "theta_binned":
+            theta_features = self._raw_to_theta_features(raw)
+            obs = self._uniform_bin(
+                theta_features,
+                self.theta_low,
+                self.theta_high,
+                self.theta_bin_counts,
+            )
+        else:
+            raise RuntimeError(f"Unsupported observation type after initialization: {self.observation_type!r}")
 
-        if not self.observation_space.contains(binned):
+        if not self.observation_space.contains(obs):
             raise RuntimeError(
                 "Internal discretization error: converted observation is outside "
-                f"MultiDiscreteSpace({self.observation_space.nvec}): {binned!r}"
+                f"MultiDiscreteSpace({self.observation_space.nvec}): {obs!r}"
             )
-        return binned
+        return obs
+
+    def _raw_to_theta_features(self, raw_obs: np.ndarray) -> np.ndarray:
+        raw = np.asarray(raw_obs, dtype=np.float64)
+        theta1 = np.arctan2(raw[1], raw[0])
+        theta2 = np.arctan2(raw[3], raw[2])
+        return np.array([theta1, theta2, raw[4], raw[5]], dtype=np.float64)
+
+    def _uniform_bin(
+        self,
+        values: np.ndarray,
+        low: np.ndarray,
+        high: np.ndarray,
+        bin_counts: list[int],
+    ) -> np.ndarray:
+        clipped = np.clip(np.asarray(values, dtype=np.float64), low, high)
+        normalized = (clipped - low) / (high - low)
+        counts = np.asarray(bin_counts, dtype=np.int64)
+        binned = np.floor(normalized * counts).astype(np.int64)
+        return np.clip(binned, 0, counts - 1).astype(np.int64)
 
     def _build_info(
         self,
@@ -205,7 +263,7 @@ class AcrobotEnv(BaseEnv):
             "binned_observation": binned_obs.tolist(),
             "symbolic_state": {
                 name: int(value)
-                for name, value in zip(self.FEATURE_NAMES, binned_obs)
+                for name, value in zip(self.feature_names, binned_obs)
             },
             "episode_return": float(self.episode_return),
             "episode_steps": int(self.episode_steps),

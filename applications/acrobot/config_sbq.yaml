@@ -29,7 +29,7 @@ agent:
   kernel_lambda: 1.0
   # With these bin counts, Hamming radius one produces 41 neighbors per
   # visited state; radius two is substantially more costly.
-  search_radius: 2.0
+  search_radius: 1.0
   alpha_k: 0.1
   use_local_normalization: true
 
@@ -40,6 +40,7 @@ training:
   log_interval: 1000
   save_interval: 50000
   progress_bar: true
+  eval_seed: 10000
 
 visualization:
   enabled: true

@@ -7,20 +7,22 @@ application:
 
 env:
   gym_env_id: Acrobot-v1
-  # Leave null for Gymnasium's default book dynamics. Set to nips only for a
-  # separately labelled ablation.
   book_or_nips: null
 
 observation:
-  type: multidiscrete_binned_continuous
-  # Naive independent binning of:
-  # cos(theta1), sin(theta1), cos(theta2), sin(theta2), dtheta1, dtheta2.
-  bin_counts: [8, 8, 8, 8, 10, 10]
+  type: theta_binned
+  theta_bin_counts: [21,21,11,11]
 
 agent:
-  name: q_learning
+  name: dqn
+  device: auto
   gamma: 0.99
-  learning_rate: 0.1
+  learning_rate: 0.0005
+  batch_size: 64
+  replay_size: 100000
+  warmup_steps: 1000
+  target_update_interval: 1000
+  hidden_sizes: [128, 128]
   epsilon:
     type: linear
     start: 1.0
@@ -46,5 +48,5 @@ visualization:
 
 logging:
   output_root: outputs
-  run_name: acrobot_qlearning_naive_bins_seed0
+  run_name: acrobot_dqn_theta_seed0
   save_csv: true

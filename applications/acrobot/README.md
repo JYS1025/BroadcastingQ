@@ -20,30 +20,40 @@ The native observation is a continuous six-dimensional vector:
 [cos(theta1), sin(theta1), cos(theta2), sin(theta2), dtheta1, dtheta2]
 ```
 
-This application converts it to the repository's required factored
+The original baseline converts it to the repository's required factored
 `MultiDiscreteSpace` by uniformly binning each coordinate independently:
 
 ```python
-MultiDiscreteSpace([10, 10, 10, 10, 12, 12])
+MultiDiscreteSpace([8, 8, 8, 8, 10, 10])
 ```
 
 The resulting categorical factors are consumed unchanged by the existing
 Q-learning, DQN, and SBQ agents.
 
+## Representation options
+
+The wrapper supports config-selectable observation representations:
+
+- `multidiscrete_binned_continuous`: the backward-compatible naive baseline
+  over `[cos(theta1), sin(theta1), cos(theta2), sin(theta2), dtheta1, dtheta2]`.
+- `theta_binned`: reconstructs `[theta1, theta2, dtheta1, dtheta2]` with
+  `np.arctan2` and bins those four ordered scalars as categorical factors.
+
+With `theta_bin_counts: [31, 31, 15, 19]`, the theta representation has four
+categorical factors.
+
 ## Intentional baseline limitation
 
-This implementation is deliberately naive.
+The original baseline is deliberately naive.
 
 - It does **not** reconstruct angles from sine/cosine values.
 - It does **not** implement periodic/circular angle distance.
 - It does **not** implement ordinal distance between nearby bins.
 - It does **not** override SBQ distance or neighborhood behavior.
 
-Consequently, current generic SBQ uses its existing Hamming distance over
-categorical bins. Changing a velocity from bin 3 to bin 4 and changing it from
-bin 3 to bin 8 both count as one differing factor to SBQ. This is a baseline
-design choice for testing the current method without changing the method
-implementation.
+The theta configs keep the same generic SBQ implementation and Hamming
+distance, but change the state representation to use explicit angle and
+velocity factors rather than raw sine/cosine factors.
 
 ## Files
 
@@ -55,6 +65,9 @@ applications/acrobot/
 ├── config_qlearning.yaml
 ├── config_dqn.yaml
 ├── config_sbq.yaml
+├── config_qlearning_theta.yaml
+├── config_dqn_theta.yaml
+├── config_sbq_theta.yaml
 ├── smoke_check.py
 └── README.md
 ```

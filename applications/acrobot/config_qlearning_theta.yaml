@@ -12,10 +12,8 @@ env:
   book_or_nips: null
 
 observation:
-  type: multidiscrete_binned_continuous
-  # Naive independent binning of:
-  # cos(theta1), sin(theta1), cos(theta2), sin(theta2), dtheta1, dtheta2.
-  bin_counts: [8, 8, 8, 8, 10, 10]
+  type: theta_binned
+  theta_bin_counts: [21,21,11,11]
 
 agent:
   name: q_learning
@@ -46,5 +44,5 @@ visualization:
 
 logging:
   output_root: outputs
-  run_name: acrobot_qlearning_naive_bins_seed0
+  run_name: acrobot_qlearning_theta_seed0
   save_csv: true

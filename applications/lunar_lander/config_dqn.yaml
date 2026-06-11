@@ -15,7 +15,7 @@ env:
 
 observation:
   type: multidiscrete_binned_continuous
-  continuous_bin_counts: [7, 7, 7, 7, 9, 7]
+  continuous_bin_counts: [11,11,11,11,13,7]
 
 agent:
   name: dqn
@@ -40,6 +40,7 @@ training:
   log_interval: 2000
   save_interval: 100000
   progress_bar: true
+  eval_seed: 10000
 
 visualization:
   enabled: true

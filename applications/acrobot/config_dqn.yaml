@@ -36,6 +36,7 @@ training:
   log_interval: 1000
   save_interval: 50000
   progress_bar: true
+  eval_seed: 10000
 
 visualization:
   enabled: true

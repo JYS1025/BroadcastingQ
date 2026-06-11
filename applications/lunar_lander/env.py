@@ -16,7 +16,11 @@ from core.spaces import DiscreteActionSpace, MultiDiscreteSpace
 
 
 class LunarLanderEnv(BaseEnv):
-    """Gymnasium LunarLander-v3 wrapper with naively binned observations."""
+    """Gymnasium LunarLander-v3 wrapper with naively binned observations.
+
+    Generic SBQ still uses its unchanged Hamming distance over the emitted
+    ``MultiDiscreteSpace``.
+    """
 
     LOW_CONT = np.array(
         [-2.5, -2.5, -10.0, -10.0, -2.0 * np.pi, -10.0],
@@ -26,13 +30,15 @@ class LunarLanderEnv(BaseEnv):
         [2.5, 2.5, 10.0, 10.0, 2.0 * np.pi, 10.0],
         dtype=np.float32,
     )
-    FEATURE_NAMES = [
+    CONTINUOUS_FEATURE_NAMES = [
         "x_coordinate",
         "y_coordinate",
         "x_velocity",
         "y_velocity",
         "angle",
         "angular_velocity",
+    ]
+    CONTACT_FEATURE_NAMES = [
         "left_leg_contact",
         "right_leg_contact",
     ]
@@ -79,6 +85,13 @@ class LunarLanderEnv(BaseEnv):
         self.action_names = list(self.ACTION_NAMES)
         self.action_space = DiscreteActionSpace(action_count)
 
+        self.observation_type = str(observation_config.get("type", "multidiscrete_binned_continuous"))
+        if self.observation_type != "multidiscrete_binned_continuous":
+            raise ValueError(
+                "Unsupported LunarLander observation.type "
+                f"{self.observation_type!r}. Expected 'multidiscrete_binned_continuous'."
+            )
+
         continuous_bin_counts = observation_config.get(
             "continuous_bin_counts",
             [7, 7, 7, 7, 9, 7],
@@ -94,6 +107,7 @@ class LunarLanderEnv(BaseEnv):
             raise ValueError("Every continuous LunarLander bin count must be at least 2")
 
         nvec = self.continuous_bin_counts + [2, 2]
+        self.feature_names = list(self.CONTINUOUS_FEATURE_NAMES + self.CONTACT_FEATURE_NAMES)
         self.observation_space = MultiDiscreteSpace(nvec)
 
         self.episode_return = 0.0
@@ -175,21 +189,18 @@ class LunarLanderEnv(BaseEnv):
         if not np.all(np.isfinite(raw)):
             raise ValueError(f"LunarLander produced a non-finite observation: {raw!r}")
 
-        continuous = raw[:6]
-        clipped = np.clip(continuous, self.LOW_CONT, self.HIGH_CONT)
-        normalized = (clipped - self.LOW_CONT) / (self.HIGH_CONT - self.LOW_CONT)
-        bin_counts = np.asarray(self.continuous_bin_counts, dtype=np.int64)
-        binned_continuous = np.floor(normalized * bin_counts).astype(np.int64)
-        binned_continuous = np.clip(binned_continuous, 0, bin_counts - 1)
+        binned_continuous = self._uniform_bin(
+            raw[:6],
+            self.LOW_CONT,
+            self.HIGH_CONT,
+            self.continuous_bin_counts,
+        )
 
         left_contact = int(float(raw[6]) >= 0.5)
         right_contact = int(float(raw[7]) >= 0.5)
-        obs = np.concatenate(
-            [
-                binned_continuous,
-                np.array([left_contact, right_contact], dtype=np.int64),
-            ]
-        ).astype(np.int64)
+        contacts = np.array([left_contact, right_contact], dtype=np.int64)
+
+        obs = np.concatenate([binned_continuous, contacts]).astype(np.int64)
 
         if not self.observation_space.contains(obs):
             raise RuntimeError(
@@ -197,6 +208,19 @@ class LunarLanderEnv(BaseEnv):
                 f"MultiDiscreteSpace({self.observation_space.nvec}): {obs!r}"
             )
         return obs
+
+    def _uniform_bin(
+        self,
+        values: np.ndarray,
+        low: np.ndarray,
+        high: np.ndarray,
+        bin_counts: list[int],
+    ) -> np.ndarray:
+        clipped = np.clip(np.asarray(values, dtype=np.float32), low, high)
+        normalized = (clipped - low) / (high - low)
+        counts = np.asarray(bin_counts, dtype=np.int64)
+        binned = np.floor(normalized * counts).astype(np.int64)
+        return np.clip(binned, 0, counts - 1).astype(np.int64)
 
     def _build_info(
         self,
@@ -214,10 +238,10 @@ class LunarLanderEnv(BaseEnv):
             "episode_return": float(self.episode_return),
             "episode_steps": int(self.episode_steps),
             "landed_or_crashed": bool(terminated),
-            "success": bool(terminated and float(reward) > 0.0),
+            "success": bool(self.episode_return >= 200.0),
             "symbolic_state": {
                 name: int(value)
-                for name, value in zip(self.FEATURE_NAMES, binned_obs)
+                for name, value in zip(self.feature_names, binned_obs)
             },
         }
         if action_name is not None:

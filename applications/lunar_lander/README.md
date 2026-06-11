@@ -49,11 +49,21 @@ two leg-contact flags are preserved as binary categorical factors:
 MultiDiscreteSpace([7, 7, 7, 7, 9, 7, 2, 2])
 ```
 
-This discretization is deliberately naive. No physics-aware distance, ordinal
-distance, circular angle handling, custom SBQ behavior, or custom agent is used.
-Generic SBQ therefore treats a one-bin difference and a far-bin difference in
-the same factor as one Hamming mismatch. That is a known baseline limitation,
-not an implementation bug.
+This baseline discretization is deliberately naive. No physics-aware distance,
+ordinal distance, circular angle handling, custom SBQ behavior, or custom agent
+is used. Generic SBQ therefore treats a one-bin difference and a far-bin
+difference in the same factor as one Hamming mismatch. That is a known baseline
+limitation, not an implementation bug.
+
+## Success metric
+
+The wrapper leaves rewards and Gymnasium termination unchanged. The `success`
+field in `info` is true when the accumulated episode return reaches the solved
+criterion:
+
+```python
+episode_return >= 200.0
+```
 
 ## Run from repository root
 
