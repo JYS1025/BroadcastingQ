@@ -1,0 +1,51 @@
+seed: 0
+
+application:
+  name: dna_promoter
+  entrypoint: applications.dna_promoter.env:DNAPromoterEnv
+  visualizer: applications.dna_promoter.visualize:DNAPromoterVisualizer
+
+env:
+  sequence_length: 6
+  target_sequences: [TATAAT, TATAAA, TATATT, TAAAAT]
+  start_sequence: null
+  avoid_target_start: true
+  max_steps: 20
+
+agent:
+  name: sbq
+  gamma: 0.99
+  learning_rate: 0.2
+  epsilon:
+    type: linear
+    start: 1.0
+    end: 0.05
+    decay_steps: 20000
+  beta_0: 1.0
+  p: 1.0
+  kernel_lambda: 1.0
+  search_radius: 2.0
+  alpha_k: 0.1
+  use_local_normalization: true
+
+training:
+  total_steps: 300000
+  eval_interval: 10000
+  eval_episodes: 200
+  eval_seed: 100000
+  log_interval: 5000
+  save_interval: 50000
+  progress_bar: true
+
+visualization:
+  enabled: true
+  interval: 10000
+  episodes: 1
+  format: gif
+  fps: 4
+  max_steps: 20
+
+logging:
+  output_root: outputs
+  run_name: dna_promoter_sbq_seed0
+  save_csv: true

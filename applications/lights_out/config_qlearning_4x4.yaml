@@ -25,7 +25,7 @@ agent:
     decay_steps: 120000
 
 training:
-  total_steps: 500000
+  total_steps: 150000
   eval_interval: 10000
   eval_episodes: 50
   eval_seed: 200000

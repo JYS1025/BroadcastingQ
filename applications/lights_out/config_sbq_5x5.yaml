@@ -6,49 +6,49 @@ application:
   visualizer: applications.lights_out.visualize:LightsOutVisualizer
 
 env:
-  rows: 4
-  cols: 4
+  rows: 5
+  cols: 5
   start_mode: solvable_scramble
-  scramble_steps: 16
+  scramble_steps: 25
   action_slip_prob: 0.05
   avoid_solved_start: true
-  max_steps: 70
+  max_steps: 100
 
 agent:
-  name: dqn
-  device: auto
+  name: sbq
   gamma: 0.99
-  learning_rate: 0.0005
-  batch_size: 64
-  replay_size: 50000
-  warmup_steps: 1000
-  target_update_interval: 1000
-  hidden_sizes: [128, 128]
+  learning_rate: 0.2
   epsilon:
     type: linear
     start: 1.0
     end: 0.05
-    decay_steps: 120000
+    decay_steps: 500000
+  beta_0: 1.0
+  p: 1.0
+  kernel_lambda: 1.0
+  search_radius: 2.0
+  alpha_k: 0.1
+  use_local_normalization: true
 
 training:
-  total_steps: 150000
-  eval_interval: 10000
+  total_steps: 500000
+  eval_interval: 50000
   eval_episodes: 50
   eval_seed: 200000
-  eval_max_steps: 70
-  log_interval: 1000
-  save_interval: 50000
+  eval_max_steps: 100
+  log_interval: 5000
+  save_interval: 250000
   progress_bar: true
 
 visualization:
   enabled: true
-  interval: 10000
+  interval: 50000
   episodes: 1
   format: gif
   fps: 4
-  max_steps: 70
+  max_steps: 100
 
 logging:
   output_root: outputs
-  run_name: lights_out_4x4_dqn_seed0
+  run_name: lights_out_5x5_sbq_seed0
   save_csv: true
