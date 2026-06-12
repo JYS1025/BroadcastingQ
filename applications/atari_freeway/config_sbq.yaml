@@ -1,0 +1,62 @@
+seed: 0
+
+application:
+  name: atari_freeway
+  entrypoint: applications.atari_freeway.env:AtariFreewayEnv
+  visualizer: applications.atari_freeway.visualize:AtariFreewayVisualizer
+
+env:
+  gym_env_id: ALE/Freeway-v5
+  obs_type: rgb
+  frameskip: 4
+  repeat_action_probability: 0.0
+  full_action_space: false
+  mode: 0
+  difficulty: 0
+  max_steps: 1000
+  render_overlay: true
+  strict_extractor: true
+  allow_extractor_fallback: false
+
+observation:
+  type: freeway_symbolic_lane_hazard
+  nvec: [11, 12, 16, 16, 16, 2, 2, 2]
+
+agent:
+  name: sbq
+  gamma: 0.99
+  learning_rate: 0.1
+  epsilon:
+    type: linear
+    start: 1.0
+    end: 0.05
+    decay_steps: 100000
+  beta_0: 0.5
+  p: 0.7
+  kernel_lambda: 1.5
+  search_radius: 1.0
+  alpha_k: 0.03
+  use_local_normalization: true
+
+training:
+  total_steps: 300000
+  eval_interval: 10000
+  eval_episodes: 10
+  eval_seed: 10000
+  eval_max_steps: 1000
+  log_interval: 1000
+  save_interval: 50000
+  progress_bar: true
+
+visualization:
+  enabled: true
+  interval: 10000
+  episodes: 1
+  format: gif
+  fps: 10
+  max_steps: 300
+
+logging:
+  output_root: outputs
+  run_name: atari_freeway_sbq_seed0
+  save_csv: true

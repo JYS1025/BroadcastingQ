@@ -1,0 +1,54 @@
+seed: 0
+
+application:
+  name: minigrid_blocked_unlock_pickup
+  entrypoint: applications.minigrid_blocked_unlock_pickup.env:MiniGridBlockedUnlockPickupEnv
+  visualizer: applications.minigrid_blocked_unlock_pickup.visualize:MiniGridBlockedUnlockPickupVisualizer
+
+env:
+  minigrid_env_id: MiniGrid-BlockedUnlockPickup-v0
+  max_steps_override: null
+  episode_step_limit: 300
+  action_subset: [left, right, forward, pickup, drop, toggle]
+
+observation:
+  type: minigrid_blocked_unlock_pickup_symbolic
+
+agent:
+  name: dqn
+  device: auto
+  gamma: 0.99
+  learning_rate: 0.0005
+  batch_size: 64
+  replay_size: 100000
+  warmup_steps: 5000
+  target_update_interval: 5000
+  hidden_sizes: [128, 128]
+  epsilon:
+    type: linear
+    start: 1.0
+    end: 0.05
+    decay_steps: 240000
+
+training:
+  total_steps: 300000
+  eval_interval: 10000
+  eval_episodes: 20
+  eval_seed: 10000
+  eval_max_steps: 300
+  log_interval: 1000
+  save_interval: 50000
+  progress_bar: true
+
+visualization:
+  enabled: true
+  interval: 10000
+  episodes: 1
+  format: gif
+  fps: 4
+  max_steps: 301
+
+logging:
+  output_root: outputs
+  run_name: MiniGridBlockedUnlockPickup_DQN
+  save_csv: true

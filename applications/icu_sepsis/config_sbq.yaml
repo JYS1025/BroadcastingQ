@@ -1,0 +1,52 @@
+seed: 0
+
+application:
+  name: icu_sepsis
+  entrypoint: applications.icu_sepsis.env:ICUSepsisEnv
+  visualizer: applications.icu_sepsis.visualize:ICUSepsisVisualizer
+
+env:
+  env_id: Sepsis/ICU-Sepsis-v2
+  kwargs: {}
+
+observation:
+  type: icu_sepsis_tabular_state_id
+
+agent:
+  name: sbq
+  gamma: 1.0
+  learning_rate: 0.1
+  epsilon:
+    type: linear
+    start: 1.0
+    end: 0.05
+    decay_steps: 150000
+  beta_0: 0.5
+  p: 0.7
+  kernel_lambda: 1.5
+  search_radius: 1.0
+  alpha_k: 0.05
+  use_local_normalization: true
+
+training:
+  total_steps: 200000
+  eval_interval: 10000
+  eval_episodes: 100
+  eval_seed: 10000
+  eval_max_steps: 500
+  log_interval: 1000
+  save_interval: 50000
+  progress_bar: true
+
+visualization:
+  enabled: true
+  interval: 10000
+  episodes: 1
+  format: gif
+  fps: 4
+  max_steps: 501
+
+logging:
+  output_root: outputs
+  run_name: ICUSepsis_SBQ(ours)
+  save_csv: true

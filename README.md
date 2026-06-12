@@ -31,6 +31,9 @@ python main.py --config applications/lights_out/config_qlearning_5x5.yaml
 python main.py --config applications/lights_out/config_sarsa_3x3.yaml
 python main.py --config applications/lights_out/config_dqn_4x4.yaml
 python main.py --config applications/lights_out/config_dqn_5x5.yaml
+python main.py --config applications/network_routing/config_qlearning.yaml
+python main.py --config applications/network_routing/config_dqn.yaml
+python main.py --config applications/network_routing/config_sbq.yaml
 ```
 
 ## Applications
@@ -66,6 +69,10 @@ The DNA promoter application searches over 6-base sequences using point mutation
 ## Lights Out
 
 The Lights Out application implements the original toggle rule: pressing a cell flips that cell and its vertical/horizontal neighbors. The default environment is 5x5 with solvable scrambled starts and slight action-slip stochasticity. The 4x4 configs are the main tabular/DQN sanity baselines; 3x3 is kept as a fast smoke-test config.
+
+## Network Routing
+
+The Network Routing application simulates packet routing across various complex network topologies (Scale-Free, Multi-Hub, Grid). The agent must navigate to a destination node while avoiding congested queues. The state is extremely compressed into a single 32-bit integer (Destination ID + 3-bit Thermometer Encoding of neighbor queue states). It features dynamic stateful queues with realistic background traffic noise and differential delay penalties, providing a highly challenging bottleneck routing environment.
 
 ## Agents
 

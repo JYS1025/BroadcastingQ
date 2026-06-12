@@ -1,4 +1,11 @@
 outputs/*
+.DS_Store
 .venv/
 __pycache__/
 *.py[cod]
+26_5_17.pdf
+temp/
+venv/
+
+*.egg-info
+*/__pycache__/

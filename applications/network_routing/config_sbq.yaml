@@ -1,0 +1,48 @@
+seed: 42
+
+application:
+  name: network_routing
+  entrypoint: applications.network_routing.env:NetworkRoutingEnv
+  visualizer: applications.network_routing.visualize:NetworkRoutingVisualizer
+
+env:
+  total_nodes: 16
+  topology_type: multi_hub
+  N: 8
+
+agent:
+  name: network_routing_sbq
+  gamma: 0.95
+  learning_rate: 0.1
+  epsilon:
+    type: linear
+    start: 1.0
+    end: 0.05
+    decay_steps: 500
+  beta_0: 1.0
+  p: 0.5
+  kernel_lambda: 1.0
+  search_radius: 3.0
+  alpha_k: 0.1
+  use_local_normalization: true
+
+training:
+  total_steps: 20000
+  eval_interval: 1000
+  eval_episodes: 10
+  log_interval: 1000
+  save_interval: 10000
+  progress_bar: true
+
+visualization:
+  enabled: true
+  interval: 10000
+  episodes: 1
+  format: gif
+  fps: 4
+  max_steps: 200
+
+logging:
+  output_root: outputs
+  run_name: network_routing_sbq
+  save_csv: true

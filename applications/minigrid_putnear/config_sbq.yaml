@@ -1,0 +1,55 @@
+seed: 0
+
+application:
+  name: minigrid_putnear
+  entrypoint: applications.minigrid_putnear.env:MiniGridPutNearEnv
+  visualizer: applications.minigrid_putnear.visualize:MiniGridPutNearVisualizer
+
+env:
+  minigrid_env_id: MiniGrid-PutNear-6x6-N2-v0
+  max_steps_override: null
+  episode_step_limit: 150
+  action_subset: [left, right, forward, pickup, drop]
+
+observation:
+  type: minigrid_putnear_symbolic
+  max_object_slots: 4
+
+agent:
+  name: minigrid_putnear_sbq
+  gamma: 0.99
+  learning_rate: 0.1
+  epsilon:
+    type: linear
+    start: 1.0
+    end: 0.05
+    decay_steps: 80000
+  beta_0: 0.5
+  p: 0.7
+  kernel_lambda: 1.5
+  search_radius: 1.0
+  alpha_k: 0.05
+  use_local_normalization: true
+
+training:
+  total_steps: 100000
+  eval_interval: 5000
+  eval_episodes: 20
+  eval_seed: 10000
+  eval_max_steps: 150
+  log_interval: 1000
+  save_interval: 50000
+  progress_bar: true
+
+visualization:
+  enabled: true
+  interval: 5000
+  episodes: 1
+  format: gif
+  fps: 4
+  max_steps: 151
+
+logging:
+  output_root: outputs
+  run_name: MiniGridPutNear_SBQ(ours)
+  save_csv: true

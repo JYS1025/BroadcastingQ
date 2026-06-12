@@ -1,0 +1,52 @@
+seed: 1
+
+application:
+  name: taxi
+  entrypoint: applications.taxi.env:TaxiEnv
+  visualizer: applications.taxi.visualize:TaxiVisualizer
+
+env:
+  gym_env_id: Taxi-v4
+  render_mode: ansi
+  kwargs: {}
+
+observation:
+  type: decoded_taxi
+
+agent:
+  name: taxi_structural_sbq
+  gamma: 0.99
+  learning_rate: 0.1
+  epsilon:
+    type: linear
+    start: 1.0
+    end: 0.05
+    decay_steps: 20000
+  beta_0: 1.0
+  p: 0.5
+  kernel_lambda: 0.7
+  search_radius: 2.0
+  alpha_k: 0.1
+  use_local_normalization: true
+
+training:
+  total_steps: 200000
+  eval_interval: 10000
+  eval_episodes: 500
+  eval_seed: 1
+  log_interval: 1000
+  save_interval: 50000
+  progress_bar: true
+
+visualization:
+  enabled: true
+  interval: 10000
+  episodes: 1
+  format: gif
+  fps: 4
+  max_steps: 201
+
+logging:
+  output_root: outputs
+  run_name: taxi_structural_sbq_seed0
+  save_csv: true
