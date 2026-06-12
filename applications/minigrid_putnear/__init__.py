@@ -1,0 +1,2 @@
+"""MiniGrid PutNear application wrapper."""
+

@@ -1,0 +1,2 @@
+"""MiniGrid BlockedUnlockPickup application wrapper."""
+
