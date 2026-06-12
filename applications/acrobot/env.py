@@ -14,6 +14,10 @@ import numpy as np
 
 from core.env_base import BaseEnv
 from core.spaces import DiscreteActionSpace, MultiDiscreteSpace
+from core.trainer import AGENT_REGISTRY
+
+
+AGENT_REGISTRY["acrobot_structural_sbq"] = "applications.acrobot.agent:AcrobotStructuralSBQ"
 
 
 class AcrobotEnv(BaseEnv):

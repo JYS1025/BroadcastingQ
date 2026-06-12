@@ -18,20 +18,20 @@ observation:
   continuous_bin_counts: [7, 7, 7, 7, 9, 5]
 
 agent:
-  name: dqn
-  device: auto
+  name: lunar_structural_sbq
   gamma: 0.99
-  learning_rate: 0.0005
-  batch_size: 64
-  replay_size: 100000
-  warmup_steps: 5000
-  target_update_interval: 1000
-  hidden_sizes: [256, 256]
+  learning_rate: 0.1
   epsilon:
     type: linear
     start: 1.0
     end: 0.05
-    decay_steps: 250000
+    decay_steps: 200000
+  beta_0: 0.5
+  p: 0.7
+  kernel_lambda: 1.0
+  search_radius: 1.0
+  alpha_k: 0.03
+  use_local_normalization: false
 
 training:
   total_steps: 500000
@@ -52,5 +52,5 @@ visualization:
 
 logging:
   output_root: outputs
-  run_name: Lunar_DQN
+  run_name: Lunar_SBQ(ours)
   save_csv: true

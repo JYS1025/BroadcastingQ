@@ -32,7 +32,7 @@ training:
   log_interval: 1000
   save_interval: 50000
   progress_bar: true
-  eval_seed: 10000
+  eval_seed: 0
 
 visualization:
   enabled: true
@@ -44,5 +44,5 @@ visualization:
 
 logging:
   output_root: outputs
-  run_name: acrobot_qlearning_theta_seed0
+  run_name: Acrobot_Qlearning
   save_csv: true

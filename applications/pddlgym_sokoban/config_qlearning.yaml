@@ -10,6 +10,8 @@ env:
   fixed_problem_index: 0
   max_steps: 100
   action_mode: direction
+  verbose_info: false
+  include_raw_literals_in_info: false
 
 observation:
   type: object_positions

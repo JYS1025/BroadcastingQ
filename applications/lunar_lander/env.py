@@ -13,6 +13,10 @@ import numpy as np
 
 from core.env_base import BaseEnv
 from core.spaces import DiscreteActionSpace, MultiDiscreteSpace
+from core.trainer import AGENT_REGISTRY
+
+
+AGENT_REGISTRY["lunar_structural_sbq"] = "applications.lunar_lander.agent:LunarLanderStructuralSBQ"
 
 
 class LunarLanderEnv(BaseEnv):

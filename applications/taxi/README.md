@@ -28,6 +28,21 @@ Taxi has a clean factored symbolic state, but passenger and destination factors
 represent task phase. The SBQ config therefore uses Hamming radius `1`, moderate
 kernel strength, and moderate kernel updates.
 
+## Structural SBQ
+
+`config_sbq_structural.yaml` uses `taxi_structural_sbq`, an application-local
+SBQ subclass that preserves the same state representation but changes
+broadcasting semantics:
+
+- distance is Manhattan distance over `[taxi_row, taxi_col]`;
+- states with different `passenger_location` or `destination` have infinite
+  distance and are excluded from neighborhoods;
+- neighborhoods keep passenger and destination fixed and include taxi positions
+  within Manhattan radius `2`.
+
+This shares value locally across taxi positions while avoiding broadcasting
+across different pickup/dropoff phases or goals.
+
 ## Visualization
 
 `TaxiEnv.render(mode="rgb_array")` draws a compact RGB grid with colored

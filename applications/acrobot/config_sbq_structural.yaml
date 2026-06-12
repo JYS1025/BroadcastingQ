@@ -11,23 +11,23 @@ env:
 
 observation:
   type: theta_binned
-  theta_bin_counts: [16,16,16,16]
+  theta_bin_counts: [16, 16, 16, 16]
 
 agent:
-  name: dqn
-  device: auto
+  name: acrobot_structural_sbq
   gamma: 0.99
-  learning_rate: 0.0005
-  batch_size: 64
-  replay_size: 100000
-  warmup_steps: 1000
-  target_update_interval: 1000
-  hidden_sizes: [128, 128]
+  learning_rate: 0.1
   epsilon:
     type: linear
     start: 1.0
     end: 0.05
     decay_steps: 100000
+  beta_0: 1.0
+  p: 0.6
+  kernel_lambda: 0.7
+  search_radius: 2.0
+  alpha_k: 0.1
+  use_local_normalization: false
 
 training:
   total_steps: 500000
@@ -48,5 +48,5 @@ visualization:
 
 logging:
   output_root: outputs
-  run_name: Acrobot_DQN
+  run_name: Acrobot_SBQ(ours)
   save_csv: true

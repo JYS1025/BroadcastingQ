@@ -55,6 +55,27 @@ The theta configs keep the same generic SBQ implementation and Hamming
 distance, but change the state representation to use explicit angle and
 velocity factors rather than raw sine/cosine factors.
 
+## Structural SBQ
+
+`config_sbq_structural.yaml` uses the existing `theta_binned` representation:
+
+```text
+[theta1_bin, theta2_bin, dtheta1_bin, dtheta2_bin]
+```
+
+The application-local `acrobot_structural_sbq` keeps the base SBQ update logic
+but replaces Hamming broadcasting:
+
+- `theta1` and `theta2` use cyclic bin distance, so bin `0` and bin `n-1` are
+  adjacent;
+- angular velocity bins use ordinary absolute bin distance and do not wrap;
+- weights are `[1.0, 1.0, 0.5, 0.5]`;
+- neighborhoods are generated with local cyclic/clipped offsets and bounded by
+  structural radius `2`.
+
+This makes broadcasting local in the physical angle/velocity representation
+without changing Acrobot dynamics, rewards, actions, or baseline configs.
+
 ## Files
 
 ```text

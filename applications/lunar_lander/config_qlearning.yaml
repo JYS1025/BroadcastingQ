@@ -15,7 +15,7 @@ env:
 
 observation:
   type: multidiscrete_binned_continuous
-  continuous_bin_counts: [11,11,11,11,13,7]
+  continuous_bin_counts: [7, 7, 7, 7, 9, 5]
 
 agent:
   name: q_learning
@@ -30,11 +30,11 @@ agent:
 training:
   total_steps: 500000
   eval_interval: 20000
-  eval_episodes: 20
+  eval_episodes: 100
   log_interval: 2000
   save_interval: 100000
   progress_bar: true
-  eval_seed: 10000
+  eval_seed: 0
 
 visualization:
   enabled: true
@@ -46,5 +46,5 @@ visualization:
 
 logging:
   output_root: outputs
-  run_name: lunar_lander_qlearning_naive_bins_seed0
+  run_name: Lunar_Qlearning
   save_csv: true

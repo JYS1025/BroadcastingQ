@@ -6,6 +6,10 @@ from PIL import Image, ImageDraw, ImageFont
 
 from core.env_base import BaseEnv
 from core.spaces import DiscreteActionSpace, MultiDiscreteSpace
+from core.trainer import AGENT_REGISTRY
+
+
+AGENT_REGISTRY["taxi_structural_sbq"] = "applications.taxi.agent:TaxiStructuralSBQ"
 
 
 class TaxiEnv(BaseEnv):

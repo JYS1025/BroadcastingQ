@@ -21,20 +21,20 @@ observation:
   canonicalize_stones: by_object_name
 
 agent:
-  name: dqn
-  device: auto
+  name: sokoban_structural_sbq
   gamma: 0.99
-  learning_rate: 0.0005
-  batch_size: 64
-  replay_size: 50000
-  warmup_steps: 1000
-  target_update_interval: 1000
-  hidden_sizes: [128, 128]
+  learning_rate: 0.1
   epsilon:
     type: linear
     start: 1.0
     end: 0.05
     decay_steps: 100000
+  beta_0: 0.3
+  p: 0.8
+  kernel_lambda: 2.0
+  search_radius: 2.0
+  alpha_k: 0.01
+  use_local_normalization: true
 
 training:
   total_steps: 200000
@@ -55,5 +55,5 @@ visualization:
 
 logging:
   output_root: outputs
-  run_name: pddlgym_sokoban_dqn_seed0
+  run_name: pddlgym_sokoban_structural_sbq_seed0
   save_csv: true

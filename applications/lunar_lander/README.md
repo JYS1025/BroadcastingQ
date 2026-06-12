@@ -46,7 +46,7 @@ The first six continuous values are independently and uniformly binned, and the
 two leg-contact flags are preserved as binary categorical factors:
 
 ```python
-MultiDiscreteSpace([7, 7, 7, 7, 9, 7, 2, 2])
+MultiDiscreteSpace([11, 11, 11, 11, 13, 7, 2, 2])
 ```
 
 This baseline discretization is deliberately naive. No physics-aware distance,
@@ -54,6 +54,26 @@ ordinal distance, circular angle handling, custom SBQ behavior, or custom agent
 is used. Generic SBQ therefore treats a one-bin difference and a far-bin
 difference in the same factor as one Hamming mismatch. That is a known baseline
 limitation, not an implementation bug.
+
+## Structural SBQ
+
+`config_sbq_structural.yaml` uses a reduced structural state:
+
+```python
+MultiDiscreteSpace([7, 7, 7, 7, 9, 5, 2, 2])
+```
+
+The application-local `lunar_structural_sbq` keeps the base SBQ update logic but
+uses weighted ordinal distance over the first six continuous bins:
+
+```text
+[x, y, vx, vy, angle, angular_velocity] weights = [0.5, 0.7, 0.5, 0.7, 1.0, 0.5]
+```
+
+Leg-contact bits are treated as phase context. Neighborhoods keep both contact
+bits fixed, and contact mismatches have infinite distance. The main structural
+config uses conservative radius `1` because LunarLander is high-dimensional and
+tabular neighborhoods can grow quickly.
 
 ## Success metric
 

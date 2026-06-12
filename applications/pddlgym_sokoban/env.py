@@ -6,6 +6,10 @@ import numpy as np
 
 from core.env_base import BaseEnv
 from core.spaces import DiscreteActionSpace, MultiDiscreteSpace
+from core.trainer import AGENT_REGISTRY
+
+
+AGENT_REGISTRY["sokoban_structural_sbq"] = "applications.pddlgym_sokoban.agent:SokobanStructuralSBQ"
 
 
 class PDDLGymSokobanEnv(BaseEnv):
@@ -24,6 +28,8 @@ class PDDLGymSokobanEnv(BaseEnv):
 
         self.max_steps = env_config.get("max_steps", 100)
         self.max_steps = None if self.max_steps is None else int(self.max_steps)
+        self.verbose_info = bool(env_config.get("verbose_info", False))
+        self.include_raw_literals_in_info = bool(env_config.get("include_raw_literals_in_info", False))
 
         try:
             import pddlgym  # noqa: F401
@@ -50,9 +56,10 @@ class PDDLGymSokobanEnv(BaseEnv):
     def reset(self, seed: int | None = None) -> tuple[np.ndarray, dict]:
         raw_obs, info = self._reset_underlying(seed=seed)
         self.episode_steps = 0
-        obs = self._convert_obs(raw_obs)
+        literals = self._literals(raw_obs)
+        obs = self._convert_obs(raw_obs, literals=literals)
         wrapped_info = dict(info)
-        wrapped_info.update(self._build_info(raw_obs, obs, action_name=None, success=False))
+        wrapped_info.update(self._build_info(obs, literals=literals, action_name=None, success=False))
         return obs, wrapped_info
 
     def step(self, action: int) -> tuple[np.ndarray, float, bool, bool, dict]:
@@ -74,12 +81,13 @@ class PDDLGymSokobanEnv(BaseEnv):
         if self.max_steps is not None and self.episode_steps >= self.max_steps and not terminated:
             truncated = True
 
-        obs = self._convert_obs(raw_obs)
+        literals = self._literals(raw_obs)
+        obs = self._convert_obs(raw_obs, literals=literals)
         wrapped_info = dict(info)
         wrapped_info.update(
             self._build_info(
-                raw_obs,
                 obs,
+                literals=literals,
                 action_name=self.action_names[int(action)],
                 success=bool(terminated),
             )
@@ -144,24 +152,48 @@ class PDDLGymSokobanEnv(BaseEnv):
         self.player_object = player
         self.stone_objects = sorted(stones, key=self._object_name)
         self.location_objects = sorted(locations, key=self._object_name)
+        self.player_object_name = self._object_name(self.player_object)
+        self.stone_object_names = [self._object_name(obj) for obj in self.stone_objects]
+        self.location_names = [self._object_name(obj) for obj in self.location_objects]
+        self.goal_location_names = sorted(self._object_name(location) for location in self._goal_locations(obs))
         self.location_to_index = {
-            self._object_name(location): idx
-            for idx, location in enumerate(self.location_objects)
+            name: idx
+            for idx, name in enumerate(self.location_names)
         }
         self.observation_space = MultiDiscreteSpace(
             [len(self.location_objects)] * (1 + len(self.stone_objects))
         )
+        self.location_adjacency = self._build_location_adjacency(literals)
+        object.__setattr__(self.observation_space, "location_names", list(self.location_names))
+        object.__setattr__(self.observation_space, "location_adjacency", tuple(tuple(sorted(v)) for v in self.location_adjacency))
 
-    def _convert_obs(self, obs) -> np.ndarray:
+    def _build_location_adjacency(self, literals: Iterable[Any]) -> list[set[int]]:
+        adjacency = [set() for _ in self.location_objects]
+        for literal in literals:
+            if self._normalize(self._predicate_name(literal)) != "move-dir":
+                continue
+            variables = self._variables(literal)
+            if len(variables) < 2:
+                continue
+            src = self.location_to_index.get(self._object_name(variables[0]))
+            dst = self.location_to_index.get(self._object_name(variables[1]))
+            if src is None or dst is None:
+                continue
+            adjacency[src].add(dst)
+            adjacency[dst].add(src)
+        return adjacency
+
+    def _convert_obs(self, obs, literals: set[Any] | None = None) -> np.ndarray:
         self._last_obs = obs
-        at_map = self._at_map(self._literals(obs))
-        objects = [self.player_object] + self.stone_objects
+        literals = self._literals(obs) if literals is None else literals
+        at_map = self._at_map(literals)
         values: list[int] = []
         missing: list[str] = []
-        for obj in objects:
-            loc = at_map.get(self._object_name(obj))
+        object_names = [self.player_object_name] + self.stone_object_names
+        for obj_name in object_names:
+            loc = at_map.get(obj_name)
             if loc is None:
-                missing.append(self._object_name(obj))
+                missing.append(obj_name)
                 continue
             loc_name = self._object_name(loc)
             if loc_name not in self.location_to_index:
@@ -257,16 +289,12 @@ class PDDLGymSokobanEnv(BaseEnv):
 
     def _build_info(
         self,
-        raw_obs,
         obs: np.ndarray,
         *,
+        literals: set[Any] | None,
         action_name: str | None,
         success: bool,
     ) -> dict:
-        goal_locations = sorted(
-            self._object_name(location)
-            for location in self._goal_locations(raw_obs)
-        )
         info = {
             "symbolic_state": {
                 "player_location": int(obs[0]),
@@ -275,14 +303,21 @@ class PDDLGymSokobanEnv(BaseEnv):
                     for idx, value in enumerate(obs[1:])
                 },
             },
-            "player_object": self._object_name(self.player_object),
-            "stone_objects": [self._object_name(obj) for obj in self.stone_objects],
-            "locations": [self._object_name(obj) for obj in self.location_objects],
-            "goal_locations": goal_locations,
-            "raw_literals": sorted(str(literal) for literal in self._literals(raw_obs)),
             "episode_steps": int(self.episode_steps),
             "success": bool(success),
         }
+        if self.verbose_info:
+            info.update(
+                {
+                    "player_object": self.player_object_name,
+                    "stone_objects": list(self.stone_object_names),
+                    "locations": list(self.location_names),
+                    "goal_locations": list(self.goal_location_names),
+                }
+            )
+        if self.include_raw_literals_in_info:
+            literals = set() if literals is None else literals
+            info["raw_literals"] = sorted(str(literal) for literal in literals)
         if action_name is not None:
             info["action_name"] = action_name
         return info
