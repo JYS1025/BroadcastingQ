@@ -50,5 +50,5 @@ visualization:
 
 logging:
   output_root: outputs
-  run_name: lights_out_4x4_sbq_seed0
+  run_name: lights_out_SBQ(ours)
   save_csv: true

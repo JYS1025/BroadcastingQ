@@ -24,7 +24,7 @@ agent:
 
 training:
   total_steps: 300000
-  eval_interval: 10000
+  eval_interval: 2000
   eval_episodes: 200
   eval_seed: 100000
   log_interval: 5000
@@ -41,5 +41,5 @@ visualization:
 
 logging:
   output_root: outputs
-  run_name: dna_promoter_sarsa_seed0
+  run_name: DNA_SARSA
   save_csv: true
