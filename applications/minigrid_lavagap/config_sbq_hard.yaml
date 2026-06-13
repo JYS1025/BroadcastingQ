@@ -1,0 +1,51 @@
+seed: 0
+
+application:
+  name: minigrid_lavagap
+  entrypoint: applications.minigrid_lavagap.env:MiniGridLavaGapEnv
+  visualizer: applications.minigrid_lavagap.visualize:MiniGridLavaGapVisualizer
+
+env:
+  minigrid_env_id: MiniGrid-LavaGapS7-v0
+  action_subset: [left, right, forward]
+  max_steps_override: 196
+
+agent:
+  name: minigrid_lavagap_sbq
+  gamma: 0.99
+  learning_rate: 0.1
+  epsilon:
+    type: linear
+    start: 1.0
+    end: 0.05
+    decay_steps: 100000
+  beta_0: 1.0
+  p: 0.6
+  kernel_lambda: 0.7
+  search_radius: 2.0
+  alpha_k: 0.05
+  use_local_normalization: true
+
+training:
+  total_steps: 500000
+  eval_interval: 10000
+  eval_episodes: 100
+  eval_seed: 1
+  eval_max_steps: 196
+  log_interval: 1000
+  save_interval: 50000
+  progress_bar: true
+
+visualization:
+  enabled: true
+  interval: 10000
+  episodes: 2
+  format: gif
+  fps: 6
+  max_steps: 196
+
+logging:
+  output_root: outputs
+  run_name: minigrid_lavagap_hard_SBQ(ours)
+  save_csv: true
+

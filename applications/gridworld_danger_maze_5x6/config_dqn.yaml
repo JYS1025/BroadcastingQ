@@ -1,0 +1,58 @@
+seed: 0
+
+application:
+  name: gridworld_danger_maze_5x6
+  entrypoint: applications.gridworld_danger_maze_5x6.env:GridworldDangerMaze5x6Env
+  visualizer: applications.gridworld_danger_maze_5x6.visualize:GridworldDangerMaze5x6Visualizer
+
+env:
+  height: 5
+  width: 6
+  start_pos: [4, 0]
+  goal_pos: [0, 5]
+  walls: [[1, 1], [1, 2], [2, 4], [3, 2]]
+  danger_cells: [[2, 2], [3, 4]]
+  max_steps: 150
+  step_penalty: -1.0
+  goal_reward: 1.0
+  danger_reward: -10.0
+
+agent:
+  name: dqn
+  device: auto
+  gamma: 0.99
+  learning_rate: 0.001
+  batch_size: 64
+  replay_size: 20000
+  warmup_steps: 1000
+  target_update_interval: 1000
+  hidden_sizes: [64, 64]
+  epsilon:
+    type: linear
+    start: 1.0
+    end: 0.05
+    decay_steps: 20000
+
+training:
+  total_steps: 100000
+  eval_interval: 5000
+  eval_episodes: 100
+  eval_seed: 10000
+  eval_max_steps: 150
+  log_interval: 1000
+  save_interval: 50000
+  progress_bar: true
+
+visualization:
+  enabled: true
+  interval: 5000
+  episodes: 1
+  format: gif
+  fps: 6
+  max_steps: 150
+
+logging:
+  output_root: outputs
+  run_name: gridworld_danger_maze_5x6_DQN
+  save_csv: true
+

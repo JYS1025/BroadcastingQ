@@ -29,7 +29,7 @@ agent:
     type: linear
     start: 1.0
     end: 0.05
-    decay_steps: 50000
+    decay_steps: 30000
   beta_0: 1.0
   p: 0.5
   kernel_lambda: 1.0
@@ -38,9 +38,9 @@ agent:
   use_local_normalization: true
 
 training:
-  total_steps: 20000
+  total_steps: 30000
   eval_interval: 1000
-  eval_episodes: 20
+  eval_episodes: 100
   log_interval: 1000
   save_interval: 50000
   progress_bar: true
@@ -55,5 +55,5 @@ visualization:
 
 logging:
   output_root: outputs
-  run_name: keydoor_sbq_seed0
+  run_name: Keydoor_SBQ(ours)
   save_csv: true

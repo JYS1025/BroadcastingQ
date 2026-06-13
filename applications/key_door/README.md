@@ -19,4 +19,5 @@ Run examples:
 python main.py --config applications/key_door/config_qlearning.yaml
 python main.py --config applications/key_door/config_sarsa.yaml
 python main.py --config applications/key_door/config_dqn.yaml
+python main.py --config applications/key_door/config_sbq.yaml
 ```

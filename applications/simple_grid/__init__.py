@@ -1,0 +1,2 @@
+"""SimpleGrid application package."""
+
