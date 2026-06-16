@@ -1,0 +1,79 @@
+seed: 0
+
+env:
+  type: ik_xyz
+  task: Isaac-SO-ARM101-Reach-v0
+  num_envs: 1
+  render_mode: null
+  ee_body_name: gripper_link
+  command_name: ee_pose
+  command_resampling_time: episode
+  success_threshold: 0.05
+  terminate_on_success: true
+  success_bonus: 0.0
+  disable_observation_noise: true
+
+reward:
+  use_shaped_reward: true
+  raw_reward_scale: 0.0
+  progress_scale: 30.0
+  distance_scale: 2.0
+  success_bonus: 50.0
+  failure_step_penalty: 0.0
+
+action:
+  step_size: 0.01
+  include_noop: true
+  adaptive_step_size:
+    enabled: true
+    schedule:
+      - distance_gte: 0.30
+        step_size: 0.15
+      - distance_gte: 0.20
+        step_size: 0.10
+      - distance_gte: 0.10
+        step_size: 0.06
+      - distance_gte: 0.05
+        step_size: 0.03
+  ik_joint_names: [shoulder_pan, shoulder_lift, elbow_flex, wrist_flex, wrist_roll]
+  ik_method: dls
+  ik_params:
+    lambda_val: 0.01
+
+observation:
+  position_error:
+    low: -0.30
+    high: 0.30
+    edges: [-0.20, -0.10, -0.05, -0.025, -0.01, 0.01, 0.025, 0.05, 0.10, 0.20]
+    distance_scale: [0.05, 0.05, 0.05]
+
+agent:
+  name: sbq
+  gamma: 0.99
+  learning_rate: 0.1
+  epsilon:
+    type: linear
+    start: 0.95
+    end: 0.05
+    decay_steps: 800000
+  distance_metric: euclidean
+  beta_0: 3.0
+  p: 0.20
+  kernel_lambda: 0.35
+  search_radius: 3.5
+  max_neighbor_delta: 4
+  alpha_k: 3.0
+  use_local_normalization: true
+
+training:
+  total_steps: 1000000
+  eval_interval: 5000
+  eval_episodes: 20
+  eval_max_steps: 360
+  log_interval: 1000
+  save_interval: 25000
+  progress_bar: true
+
+logging:
+  output_root: outputs
+  run_name: so101_reach_ik_sbq_aggressive_seed0

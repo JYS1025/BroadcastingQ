@@ -5,9 +5,9 @@ import csv
 import os
 from pathlib import Path
 
-mpl_config_dir = Path("/private/tmp/broadcastingq-matplotlib")
+mpl_config_dir = Path("/tmp/broadcastingq-matplotlib")
 mpl_config_dir.mkdir(parents=True, exist_ok=True)
-cache_dir = Path("/private/tmp/broadcastingq-cache")
+cache_dir = Path("/tmp/broadcastingq-cache")
 cache_dir.mkdir(parents=True, exist_ok=True)
 os.environ.setdefault("MPLCONFIGDIR", str(mpl_config_dir))
 os.environ.setdefault("XDG_CACHE_HOME", str(cache_dir))

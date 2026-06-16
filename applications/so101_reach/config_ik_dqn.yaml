@@ -1,0 +1,105 @@
+seed: 0
+
+# UNIFIED TASK: env / reward / action / observation / training below are kept IDENTICAL to
+# config_ik_sbq.yaml and config_ik_qlearning.yaml so the three agents are compared on the exact
+# same task. Only the `agent` block and logging.run_name differ. If you change the task, change
+# it in all three files.
+
+env:
+  type: ik_xyz
+  task: Isaac-SO-ARM101-Reach-v0
+  num_envs: 1
+  render_mode: null
+  ee_body_name: gripper_link
+  command_name: ee_pose
+  command_resampling_time: episode
+  success_threshold: 0.03
+  terminate_on_success: true
+  success_bonus: 0.0
+  disable_observation_noise: true
+  max_episode_steps: 80
+  reset_settle_steps: 10
+  # Crouched reset posture (task default of 0 leaves the arm horizontal; the reset event
+  # multiplies the default so a 0 stays 0). See env_ik.py / config_ik_sbq.yaml for the why.
+  reset_joint_pos:
+    shoulder_lift: 0.6
+    elbow_flex: -0.8
+  reset_joint_pos_range: [0.95, 1.05]
+  arm_effort_limit: 3.0
+  arm_stiffness_scale: null
+  # Absolute base-frame goal box (not the EE-relative shell).
+  ee_relative_target:
+    enabled: false
+    radius: 0.08
+    min_radius: 0.04
+  target_ranges:
+    pos_x: [-0.1, 0.1]
+    pos_y: [-0.25, -0.1]
+    pos_z: [0.1, 0.18]
+
+reward:
+  use_shaped_reward: true
+  raw_reward_scale: 0.0
+  progress_scale: 10.0
+  distance_scale: 1.0
+  success_bonus: 10.0
+  failure_step_penalty: 0.0
+
+action:
+  step_size: 0.01
+  include_noop: true
+  control_substeps: 5
+  command_max_lag: 0.08
+  adaptive_step_size:
+    enabled: true
+    schedule:
+      - distance_gte: 0.25
+        step_size: 0.08
+      - distance_gte: 0.15
+        step_size: 0.05
+      - distance_gte: 0.08
+        step_size: 0.03
+      - distance_gte: 0.04
+        step_size: 0.015
+  # 3-DOF IK (square Jacobian; wrists frozen to avoid redundant-DOF limit saturation).
+  ik_joint_names: [shoulder_pan, shoulder_lift, elbow_flex]
+  ik_method: dls
+  ik_params:
+    lambda_val: 0.01
+
+observation:
+  position_error:
+    low: -0.30
+    high: 0.30
+    edges: [-0.20, -0.10, -0.05, -0.025, -0.01, 0.01, 0.025, 0.05, 0.10, 0.20]
+    distance_scale: [0.05, 0.05, 0.05]
+
+agent:
+  name: dqn
+  gamma: 0.99
+  learning_rate: 0.0005
+  batch_size: 64
+  replay_size: 50000
+  warmup_steps: 1000
+  target_update_interval: 1000
+  hidden_sizes: [128, 128]
+  grad_clip_norm: 10.0
+  device: auto
+  epsilon:
+    type: linear
+    start: 0.7
+    end: 0.05
+    decay_steps: 120000
+
+training:
+  total_steps: 300000
+  eval_interval: 10000
+  eval_episodes: 20
+  eval_max_steps: 80
+  log_interval: 1000
+  save_interval: 25000
+  progress_bar: true
+
+logging:
+  output_root: outputs
+  run_name: so101_reach_ik_dqn_seed0

@@ -1,7 +1,18 @@
 outputs/*
-.venv/
+
+# Python caches and local environments
 __pycache__/
+**/__pycache__/
 *.py[cod]
-26_5_17.pdf
-temp/
+*$py.class
+.venv/
+.venv_*/
 venv/
+
+# Local/generated runtime artifacts
+logs/
+temp/
+${data}/
+*.egg-info/
+
+26_5_17.pdf

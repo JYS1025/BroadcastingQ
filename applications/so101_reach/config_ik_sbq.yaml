@@ -1,0 +1,133 @@
+seed: 0
+
+env:
+  type: ik_xyz
+  task: Isaac-SO-ARM101-Reach-v0
+  num_envs: 1
+  render_mode: null
+  ee_body_name: gripper_link
+  command_name: ee_pose
+  command_resampling_time: episode
+  success_threshold: 0.03
+  terminate_on_success: true
+  success_bonus: 0.0
+  disable_observation_noise: true
+  max_episode_steps: 80
+  reset_settle_steps: 10
+  # Crouched reset posture. The task default (shoulder_lift=0, elbow_flex=0) is a horizontal
+  # arm -- max gravity torque and near-singular for lifting, so the arm can't hold/raise in z.
+  # The reset event multiplies the default, so a 0 default stays 0; these non-zero defaults
+  # are what actually move the start pose. SIGNS ARE A GUESS: if the probe shows the EE went
+  # DOWN or +z reachability is still ~0.2, flip the sign of shoulder_lift / elbow_flex and
+  # re-run. Tune magnitudes until '+z' reachability frac ~1 and noop z-drift ~0.
+  reset_joint_pos:
+    shoulder_lift: 0.6
+    elbow_flex: -0.8
+  # Fraction of the default pose used at reset (1.0 = exactly the default). Tight for a
+  # consistent diagnostic pose; widen later (e.g. [0.8, 1.2]) for training-time variety.
+  reset_joint_pos_range: [0.95, 1.05]
+  # Arm actuator authority (task-local override of the robot asset). Default effort_limit_sim
+  # is 1.9 Nm = the Feetech STS3215 stall torque at 7.4V; the arm is torque-starved there
+  # (sags ~3cm under noop, +z reachability ~0.15, NO joint at a limit). A 12V build is ~3 Nm,
+  # so this is realistic, not cheating. null = leave the asset default. stiffness_scale null
+  # = unchanged (raise only if holding is still loose after the effort bump).
+  arm_effort_limit: 3.0
+  # Tested and reverted: effort (1.9->3.0) moved only the saturating -x motion, and stiffness
+  # (1x->3x) changed nothing measurable. So the residual z-droop and weak +z are NOT actuator-
+  # gain limited -- they're set by the differential-IK loop + the arm's vertical manipulability
+  # at this workspace (a kinematic ceiling). Gain tuning is a dead end; left at null.
+  arm_stiffness_scale: null
+  # Goal sampling: absolute base-frame box (the task's built-in random creation),
+  # not the EE-relative shell. The shell was a difficulty crutch; reverted.
+  ee_relative_target:
+    enabled: false
+    radius: 0.08
+    min_radius: 0.04
+  # Constrained box: x/y kept at the task default (reach ~0.9 across the full range);
+  # z capped to the reachable lower half [0.1, 0.2] because the arm's vertical
+  # authority is the failure axis (EE sags 7.5-15cm below high targets). Excludes
+  # physically-unreachable high-z goals so the RL agent is graded on reachable targets.
+  # Task default for reference: x[-0.1,0.1], y[-0.25,-0.1], z[0.1,0.3].
+  target_ranges:
+    pos_x: [-0.1, 0.1]
+    pos_y: [-0.25, -0.1]
+    # Reachable band for the 3-DOF discrete-IK action space (NOT a robot limit -- PPO with full
+    # joint control reaches higher; our weak axis is the control stack). Unified across all three
+    # agent configs. The top of this band is hard for everyone, equally -> fair comparison.
+    pos_z: [0.1, 0.18]
+reward:
+  use_shaped_reward: true
+  raw_reward_scale: 0.0
+  progress_scale: 10.0
+  distance_scale: 1.0
+  success_bonus: 10.0
+  failure_step_penalty: 0.0
+
+action:
+  step_size: 0.01
+  include_noop: true
+  control_substeps: 5
+  # Anti-windup bound (m) on the persistent IK setpoint (how far the commanded point may
+  # lead the actual EE). Keeps a standing position error so the PD resists gravity sag,
+  # while preventing runaway on unreachable axes. 0 = pure integration (no clamp).
+  command_max_lag: 0.08
+  adaptive_step_size:
+    enabled: true
+    schedule:
+      - distance_gte: 0.25
+        step_size: 0.08
+      - distance_gte: 0.15
+        step_size: 0.05
+      - distance_gte: 0.08
+        step_size: 0.03
+      - distance_gte: 0.04
+        step_size: 0.015
+  # Position-only reach: use the 3 positioning joints so the IK Jacobian is square and
+  # well-posed. Including the wrist joints adds redundant DOFs the IK drives into their
+  # limits (wrist_flex pinned HIGH), which kills x/z authority. Wrists hold at their
+  # reset angle and only affect gripper orientation, which this task does not control.
+  ik_joint_names: [shoulder_pan, shoulder_lift, elbow_flex]
+  ik_method: dls
+  ik_params:
+    lambda_val: 0.01
+
+observation:
+  position_error:
+    low: -0.30
+    high: 0.30
+    edges: [-0.20, -0.10, -0.05, -0.025, -0.01, 0.01, 0.025, 0.05, 0.10, 0.20]
+    distance_scale: [0.05, 0.05, 0.05]
+
+agent:
+  name: sbq
+  gamma: 0.99
+  learning_rate: 0.1
+  epsilon:
+    type: linear
+    start: 0.7
+    end: 0.05
+    decay_steps: 120000
+  distance_metric: euclidean
+  beta_0: 1.0
+  p: 0.5
+  kernel_lambda: 0.5
+  search_radius: 1.5
+  max_neighbor_delta: 3
+  # Kernel ON: broadcasts TD errors to spatially-near states (the SBQ mechanism). 0.3 is the
+  # value settled during earlier tuning. With alpha_k=0 this collapses to the plain tabular Q
+  # run (so101_reach_ik_sbq_final) -- so SBQ-here vs config_ik_qlearning is the kernel's effect.
+  alpha_k: 0.3
+  use_local_normalization: true
+
+training:
+  total_steps: 300000
+  eval_interval: 10000
+  eval_episodes: 20
+  eval_max_steps: 80
+  log_interval: 1000
+  save_interval: 25000
+  progress_bar: true
+
+logging:
+  output_root: outputs
+  run_name: so101_reach_ik_sbq_kernel_seed0

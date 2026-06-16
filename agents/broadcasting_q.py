@@ -172,7 +172,7 @@ class SBQAgent(BaseAgent):
         
         # Eq. (5): Calculate the TD error using the combined Q-function
         current_combined_q = self.get_combined_q(state)[action]
-        if transition.done:
+        if transition.terminated:
             bootstrap = 0.0
         else:
             bootstrap = float(np.max(self.get_combined_q(next_state)))

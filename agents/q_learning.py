@@ -38,7 +38,7 @@ class QLearningAgent(BaseAgent):
         state = self.observation_space.to_index(transition.obs)
         next_state = self.observation_space.to_index(transition.next_obs)
         current = self.q_table.get(state, transition.action)
-        bootstrap = 0.0 if transition.done else float(np.max(self.q_table.row(next_state)))
+        bootstrap = 0.0 if transition.terminated else float(np.max(self.q_table.row(next_state)))
         target = float(transition.reward + self.gamma * bootstrap)
         td_error = target - current
         q_value = self.q_table.add(state, transition.action, self.learning_rate * td_error)

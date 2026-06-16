@@ -7,6 +7,8 @@ agents/q_learning.py
 agents/q_table.py
 agents/random_agent.py
 agents/sarsa.py
+agents/soft_broadcasting_q.py
+agents/soft_q_learning.py
 applications/__init__.py
 applications/dna_promoter/__init__.py
 applications/dna_promoter/env.py
@@ -17,6 +19,21 @@ applications/key_door/visualize.py
 applications/lights_out/__init__.py
 applications/lights_out/env.py
 applications/lights_out/visualize.py
+applications/network_routing/__init__.py
+applications/network_routing/agent.py
+applications/network_routing/env.py
+applications/network_routing/topology.py
+applications/network_routing/visualize.py
+applications/so101_reach/__init__.py
+applications/so101_reach/action_space.py
+applications/so101_reach/agents.py
+applications/so101_reach/discretization.py
+applications/so101_reach/env.py
+applications/so101_reach/env_ik.py
+applications/so101_reach/eval_isaac.py
+applications/so101_reach/probe_actions.py
+applications/so101_reach/runner.py
+applications/so101_reach/train_isaac.py
 core/__init__.py
 core/agent_base.py
 core/env_base.py
@@ -42,4 +59,5 @@ tests/test_lights_out_env.py
 tests/test_new_env_training_smoke.py
 tests/test_q_learning_keydoor.py
 tests/test_q_table.py
+tests/test_so101_reach_discretization.py
 tests/test_spaces.py
