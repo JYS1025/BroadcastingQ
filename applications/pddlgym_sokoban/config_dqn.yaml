@@ -1,0 +1,59 @@
+seed: 0
+
+application:
+  name: pddlgym_sokoban
+  entrypoint: applications.pddlgym_sokoban.env:PDDLGymSokobanEnv
+  visualizer: applications.pddlgym_sokoban.visualize:PDDLGymSokobanVisualizer
+
+env:
+  pddlgym_env_id: PDDLEnvSokoban-v0
+  fixed_problem_index: 0
+  max_steps: 100
+  action_mode: direction
+  verbose_info: false
+  include_raw_literals_in_info: false
+
+observation:
+  type: object_positions
+  include_player_position: true
+  include_stone_positions: true
+  include_goal_positions: false
+  canonicalize_stones: by_object_name
+
+agent:
+  name: dqn
+  device: auto
+  gamma: 0.99
+  learning_rate: 0.0005
+  batch_size: 64
+  replay_size: 50000
+  warmup_steps: 1000
+  target_update_interval: 1000
+  hidden_sizes: [128, 128]
+  epsilon:
+    type: linear
+    start: 1.0
+    end: 0.05
+    decay_steps: 100000
+
+training:
+  total_steps: 200000
+  eval_interval: 5000
+  eval_episodes: 20
+  eval_seed: 10000
+  log_interval: 1000
+  save_interval: 50000
+  progress_bar: true
+
+visualization:
+  enabled: false
+  interval: 5000
+  episodes: 1
+  format: gif
+  fps: 4
+  max_steps: 100
+
+logging:
+  output_root: outputs
+  run_name: pddlgym_sokoban_dqn_seed0
+  save_csv: true

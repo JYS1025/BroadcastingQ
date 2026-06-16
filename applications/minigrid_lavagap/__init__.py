@@ -1,0 +1,2 @@
+"""MiniGrid LavaGap application package."""
+

@@ -1,0 +1,63 @@
+seed: 0
+
+application:
+  name: gridworld_danger_maze_5x6
+  entrypoint: applications.gridworld_danger_maze_5x6.env:GridworldDangerMaze5x6Env
+  visualizer: applications.gridworld_danger_maze_5x6.visualize:GridworldDangerMaze5x6Visualizer
+
+env:
+  height: 8
+  width: 8
+  layout_mode: random_from_set
+  layout_id_count: 3
+  include_layout_id: true
+  goal_mode: random_corners
+  goal_locations: [[0, 0], [0, 7], [7, 0], [7, 7]]
+  include_goal_id: true
+  random_start: true
+  danger_reward: -10.0
+  danger_terminal: false
+  step_reward: -1.0
+  invalid_move_reward: -1.0
+  goal_reward: 20.0
+  max_steps: 150
+
+agent:
+  name: gridworld_danger_maze_5x6_sbq
+  gamma: 0.99
+  learning_rate: 0.1
+  epsilon:
+    type: linear
+    start: 1.0
+    end: 0.05
+    decay_steps: 20000
+  beta_0: 1.0
+  p: 0.5
+  kernel_lambda: 0.7
+  search_radius: 2.0
+  alpha_k: 0.1
+  use_local_normalization: true
+
+training:
+  total_steps: 100000
+  eval_interval: 500
+  eval_episodes: 100
+  eval_seed: 1
+  eval_max_steps: 150
+  log_interval: 1000
+  save_interval: 50000
+  progress_bar: true
+
+visualization:
+  enabled: true
+  interval: 10000
+  episodes: 1
+  format: gif
+  fps: 6
+  max_steps: 150
+
+logging:
+  output_root: outputs
+  run_name: gridworld_danger_maze_5x6_hard_SBQ(ours)
+  save_csv: true
+

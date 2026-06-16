@@ -1,0 +1,56 @@
+seed: 0
+
+application:
+  name: gridworld_full_4x5
+  entrypoint: applications.gridworld_full_4x5.env:GridworldFull4x5Env
+  visualizer: applications.gridworld_full_4x5.visualize:GridworldFull4x5Visualizer
+
+env:
+  height: 4
+  width: 5
+  start_pos: [3, 0]
+  goal_pos: [0, 4]
+  walls: []
+  max_steps: 100
+  step_penalty: -1.0
+  goal_reward: 1.0
+
+agent:
+  name: gridworld_full_4x5_sbq
+  gamma: 0.99
+  learning_rate: 0.1
+  epsilon:
+    type: linear
+    start: 1.0
+    end: 0.05
+    decay_steps: 10000
+  beta_0: 1.0
+  p: 0.5
+  kernel_lambda: 0.7
+  search_radius: 2.0
+  alpha_k: 0.1
+  use_local_normalization: true
+
+training:
+  total_steps: 50000
+  eval_interval: 5000
+  eval_episodes: 100
+  eval_seed: 10000
+  eval_max_steps: 100
+  log_interval: 1000
+  save_interval: 25000
+  progress_bar: true
+
+visualization:
+  enabled: true
+  interval: 5000
+  episodes: 1
+  format: gif
+  fps: 6
+  max_steps: 100
+
+logging:
+  output_root: outputs
+  run_name: gridworld_full_4x5_SBQ(ours)
+  save_csv: true
+

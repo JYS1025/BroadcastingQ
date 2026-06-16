@@ -1,0 +1,50 @@
+seed: 0
+
+application:
+  name: acrobot
+  entrypoint: applications.acrobot.env:AcrobotEnv
+  visualizer: applications.acrobot.visualize:AcrobotVisualizer
+
+env:
+  gym_env_id: Acrobot-v1
+  # Leave null for Gymnasium's default book dynamics. Set to nips only for a
+  # separately labelled ablation.
+  book_or_nips: null
+
+observation:
+  type: multidiscrete_binned_continuous
+  # Naive independent binning of:
+  # cos(theta1), sin(theta1), cos(theta2), sin(theta2), dtheta1, dtheta2.
+  bin_counts: [8, 8, 8, 8, 10, 10]
+
+agent:
+  name: q_learning
+  gamma: 0.99
+  learning_rate: 0.1
+  epsilon:
+    type: linear
+    start: 1.0
+    end: 0.05
+    decay_steps: 100000
+
+training:
+  total_steps: 300000
+  eval_interval: 5000
+  eval_episodes: 20
+  log_interval: 1000
+  save_interval: 50000
+  progress_bar: true
+  eval_seed: 10000
+
+visualization:
+  enabled: true
+  interval: 10000
+  episodes: 1
+  format: gif
+  fps: 30
+  max_steps: 500
+
+logging:
+  output_root: outputs
+  run_name: acrobot_qlearning_naive_bins_seed0
+  save_csv: true

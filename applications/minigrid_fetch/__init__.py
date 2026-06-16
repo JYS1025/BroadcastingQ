@@ -1,0 +1,2 @@
+"""MiniGrid Fetch application wrapper."""
+

@@ -1,0 +1,47 @@
+seed: 0
+
+application:
+  name: connect4
+  entrypoint: applications.connect4.env:Connect4Env
+  visualizer: applications.connect4.visualize:Connect4Visualizer
+
+env:
+  opponent: BabySmarterPlayer
+  first_player: 1
+  render_mode: rgb_array
+
+observation:
+  type: connect4_board
+
+agent:
+  name: connect4_q_learning_masked
+  gamma: 0.99
+  learning_rate: 0.1
+  epsilon:
+    type: linear
+    start: 1.0
+    end: 0.05
+    decay_steps: 80000
+
+training:
+  total_steps: 100000
+  eval_interval: 5000
+  eval_episodes: 100
+  eval_seed: 10000
+  eval_max_steps: 42
+  log_interval: 1000
+  save_interval: 50000
+  progress_bar: true
+
+visualization:
+  enabled: true
+  interval: 5000
+  episodes: 1
+  format: gif
+  fps: 4
+  max_steps: 43
+
+logging:
+  output_root: outputs
+  run_name: Connect4_Qlearning
+  save_csv: true

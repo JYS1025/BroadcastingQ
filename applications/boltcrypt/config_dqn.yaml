@@ -1,0 +1,58 @@
+seed: 0
+
+application:
+  name: boltcrypt
+  entrypoint: applications.boltcrypt.env:BoltCryptEnv
+  visualizer: applications.boltcrypt.visualize:BoltCryptVisualizer
+
+env:
+  generator_config: null
+  puzzle_bonus: true
+  key_bonus: true
+  max_episode_steps: 300
+  render_scale: 32
+
+observation:
+  type: boltcrypt_local_grid
+  tile_count: 11
+  include_global_position: true
+  global_coord_limit: 32
+
+agent:
+  name: dqn
+  device: auto
+  gamma: 0.99
+  learning_rate: 0.0005
+  batch_size: 64
+  replay_size: 100000
+  warmup_steps: 5000
+  target_update_interval: 5000
+  hidden_sizes: [128, 128]
+  epsilon:
+    type: linear
+    start: 1.0
+    end: 0.05
+    decay_steps: 150000
+
+training:
+  total_steps: 200000
+  eval_interval: 10000
+  eval_episodes: 20
+  eval_seed: 10000
+  eval_max_steps: 300
+  log_interval: 1000
+  save_interval: 50000
+  progress_bar: true
+
+visualization:
+  enabled: true
+  interval: 10000
+  episodes: 1
+  format: gif
+  fps: 4
+  max_steps: 301
+
+logging:
+  output_root: outputs
+  run_name: BoltCrypt_DQN
+  save_csv: true

@@ -1,0 +1,49 @@
+seed: 0
+
+application:
+  name: minigrid_fetch
+  entrypoint: applications.minigrid_fetch.env:MiniGridFetchEnv
+  visualizer: applications.minigrid_fetch.visualize:MiniGridFetchVisualizer
+
+env:
+  minigrid_env_id: MiniGrid-Fetch-5x5-N2-v0
+  max_steps_override: null
+  episode_step_limit: 125
+  action_subset: [left, right, forward, pickup]
+
+observation:
+  type: minigrid_fetch_symbolic
+  max_object_slots: 3
+
+agent:
+  name: minigrid_fetch_q_learning_tiebreak
+  gamma: 0.99
+  learning_rate: 0.1
+  epsilon:
+    type: linear
+    start: 1.0
+    end: 0.05
+    decay_steps: 80000
+
+training:
+  total_steps: 100000
+  eval_interval: 5000
+  eval_episodes: 20
+  eval_seed: 10000
+  eval_max_steps: 125
+  log_interval: 1000
+  save_interval: 50000
+  progress_bar: true
+
+visualization:
+  enabled: true
+  interval: 5000
+  episodes: 1
+  format: gif
+  fps: 4
+  max_steps: 126
+
+logging:
+  output_root: outputs
+  run_name: MiniGridFetch_Qlearning
+  save_csv: true

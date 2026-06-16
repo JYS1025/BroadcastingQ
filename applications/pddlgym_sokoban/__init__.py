@@ -1,0 +1,1 @@
+"""PDDLGym Sokoban application package."""

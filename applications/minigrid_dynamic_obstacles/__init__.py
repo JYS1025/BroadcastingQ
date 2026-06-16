@@ -1,0 +1,2 @@
+"""MiniGrid DynamicObstacles application package."""
+

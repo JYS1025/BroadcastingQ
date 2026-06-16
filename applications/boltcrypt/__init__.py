@@ -1,0 +1,2 @@
+"""BoltCrypt application wrapper."""
+

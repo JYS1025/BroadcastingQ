@@ -1,6 +1,8 @@
 outputs/*
 
 # Python caches and local environments
+.DS_Store
+.venv/
 __pycache__/
 **/__pycache__/
 *.py[cod]
@@ -16,3 +18,5 @@ ${data}/
 *.egg-info/
 
 26_5_17.pdf
+*.egg-info
+*/__pycache__/

@@ -31,7 +31,7 @@ agent:
     decay_steps: 120000
 
 training:
-  total_steps: 500000
+  total_steps: 150000
   eval_interval: 10000
   eval_episodes: 50
   eval_seed: 200000
@@ -50,5 +50,5 @@ visualization:
 
 logging:
   output_root: outputs
-  run_name: lights_out_4x4_dqn_seed0
+  run_name: lights_out_DQN
   save_csv: true
