@@ -4,7 +4,6 @@ Last updated: 2026-06-10
 
 ## Project Scope
 
-- Main repo: `/home/wisrl/jwp_individual_study/BroadcastingQ`
 - Task: `Isaac-SO-ARM101-Reach-v0`
 - Focus: make tabular/SBQ-style learning work on the IK/task-space SO101 reach wrapper.
 - Main files:
