@@ -2,6 +2,8 @@
 
 **Authors:** Yoonseong Jeong, Seungjun Kim, Jinwoong Park (School of Computing, KAIST) 
 
+[![paper PDF](https://img.shields.io/badge/Paper-PDF-red.svg)](https://drive.google.com/file/d/115syK7iBL1K-FxDcqv8YOLjIsH2Houkn/preview)
+
 ## Overview
 
 This repository contains the official reinforcement learning research framework and application environments for the paper *Structural Broadcasting Q-learning: Annealed Kernel Generalization for Tabular Reinforcement Learning*.
